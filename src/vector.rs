@@ -1,7 +1,5 @@
 //! This module handles vectors.
 
-#![cfg_attr(debug_assertions, allow(dead_code))]
-
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// An RGB colour.
@@ -86,15 +84,15 @@ impl Vec3 {
     pub fn into_u8_array(self) -> [u8; 3] {
         debug_assert!(
             (0.0..=1.0).contains(&self.x),
-            "The x value must be between 0.0 and 1.0"
+            "The x value must be in [0, 1]"
         );
         debug_assert!(
             (0.0..=1.0).contains(&self.y),
-            "The y value must be between 0.0 and 1.0"
+            "The y value must be in [0, 1]"
         );
         debug_assert!(
             (0.0..=1.0).contains(&self.z),
-            "The z value must be between 0.0 and 1.0"
+            "The z value must be in [0, 1]"
         );
         [
             (self.x * 255.).round() as u8,

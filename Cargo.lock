@@ -251,6 +251,7 @@ dependencies = [
  "num-traits",
  "png",
  "qoi",
+ "rayon",
  "tiff",
 ]
 
@@ -397,6 +398,7 @@ version = "0.1.0"
 dependencies = [
  "color-eyre",
  "image",
+ "rayon",
 ]
 
 [[package]]

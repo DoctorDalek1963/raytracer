@@ -1,0 +1,12 @@
+[package]
+name = "raytracer"
+version = "0.1.0"
+authors = ["Dyson Dyson <dyson.dyson@icloud.com>"]
+edition = "2021"
+publish = false
+repository = "https://github.com/DoctorDalek1963/raytracer"
+license = "GPL-3.0"
+description = "A simple raytracer based on <https://rs118.uwcs.co.uk/raytracer.html>"
+
+[dependencies]
+image = "0.24.8"

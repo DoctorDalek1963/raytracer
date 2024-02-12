@@ -29,13 +29,16 @@ impl Ray {
 
     /// Trace this ray and determine its colour.
     pub fn colour(&self) -> Colour {
-        if Sphere::new(v!(0, 0, -1), 0.5).hit(self) {
-            v!(1, 0, 0)
+        let sphere_centre = v!(0, 0, -1);
+        if let Some(t) = Sphere::new(sphere_centre, 0.5).hit(self) {
+            let intersection = self.at(t);
+            let surface_normal = (intersection - sphere_centre).normalise();
+            surface_normal.map(|x| (x + 1.) / 2.)
         } else {
             let height = ((self.direction / -self.direction.z).y + 1.) / 2.;
             debug_assert!(
                 (0.0..=1.0).contains(&height),
-                "The height must be in [0, 1]"
+                "The height must be in [0, 1]: {height}"
             );
             (1. - height) * v!(1) + height * v!(0.5, 0.7, 1)
         }

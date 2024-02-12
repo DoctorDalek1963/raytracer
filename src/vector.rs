@@ -84,15 +84,18 @@ impl Vec3 {
     pub fn into_u8_array(self) -> [u8; 3] {
         debug_assert!(
             (0.0..=1.0).contains(&self.x),
-            "The x value must be in [0, 1]"
+            "The x value must be in [0, 1]: {}",
+            self.x
         );
         debug_assert!(
             (0.0..=1.0).contains(&self.y),
-            "The y value must be in [0, 1]"
+            "The y value must be in [0, 1]: {}",
+            self.y
         );
         debug_assert!(
             (0.0..=1.0).contains(&self.z),
-            "The z value must be in [0, 1]"
+            "The z value must be in [0, 1]: {}",
+            self.z
         );
         [
             (self.x * 255.).round() as u8,

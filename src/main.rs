@@ -31,13 +31,13 @@ fn main() -> Result<()> {
         let x_prop = i as f64 / IMG_WIDTH as f64;
         debug_assert!(
             (0.0..=1.0).contains(&x_prop),
-            "The x proportion must be in [0, 1]"
+            "The x proportion must be in [0, 1]: {x_prop}"
         );
 
         let y_prop = j as f64 / IMG_HEIGHT as f64;
         debug_assert!(
             (0.0..=1.0).contains(&y_prop),
-            "The y proportion must be in [0, 1]"
+            "The y proportion must be in [0, 1]: {y_prop}"
         );
 
         let pixel_pos_vec = viewport_top_left + x_prop * vec_width - y_prop * vec_height;

@@ -13,5 +13,8 @@ color-eyre = "0.6.2"
 image = { version = "0.24.8", features = ["rayon"] }
 rayon = "1.8.1"
 
+[profile.dev]
+opt-level = 1
+
 [profile.release]
 lto = "fat"

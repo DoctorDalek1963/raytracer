@@ -9,4 +9,5 @@ license = "GPL-3.0"
 description = "A simple raytracer based on <https://rs118.uwcs.co.uk/raytracer.html>"
 
 [dependencies]
+color-eyre = "0.6.2"
 image = "0.24.8"

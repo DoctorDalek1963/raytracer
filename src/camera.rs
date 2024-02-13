@@ -37,19 +37,11 @@ impl Camera {
     /// Return the ray from this camera going through the given pixel.
     ///
     /// The position of the pixel in each direction is given as a proportion of the total viewport
-    /// size in that direction.
+    /// size in that direction. The given proportions should be in the range `[0, 1]` and will be
+    /// clamped down to that if they exceed it.
     pub fn get_ray(&self, x_prop: f64, y_prop: f64) -> Ray {
-        debug_assert!(
-            (0.0..=1.0).contains(&x_prop),
-            "The x proportion must be in [0, 1]: {x_prop}"
-        );
-        debug_assert!(
-            (0.0..=1.0).contains(&y_prop),
-            "The y proportion must be in [0, 1]: {y_prop}"
-        );
-
-        let pixel_pos_vec =
-            self.viewport_top_left + x_prop * self.viewport_width - y_prop * self.viewport_height;
+        let pixel_pos_vec = self.viewport_top_left + x_prop.clamp(0., 1.) * self.viewport_width
+            - y_prop.clamp(0., 1.) * self.viewport_height;
 
         Ray::new(self.position, pixel_pos_vec)
     }

@@ -12,6 +12,7 @@ description = "A simple raytracer based on <https://rs118.uwcs.co.uk/raytracer.h
 clap = { version = "4.5.0", features = ["derive"] }
 color-eyre = "0.6.2"
 image = { version = "0.24.8", features = ["rayon"] }
+indicatif = { version = "0.17.8", features = ["rayon"] }
 rand = "0.8.5"
 rayon = "1.8.1"
 

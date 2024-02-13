@@ -12,6 +12,7 @@ use camera::Camera;
 use clap::Parser;
 use color_eyre::{eyre::Context, Result};
 use image::RgbImage;
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use object::Sphere;
 use rand::{distributions::Distribution, thread_rng};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
@@ -52,23 +53,39 @@ fn main() -> Result<()> {
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);
 
-    img.par_enumerate_pixels_mut().for_each(|(i, j, pixel)| {
-        let colour_sum: Colour = (0..args.samples)
-            .into_par_iter()
-            .map(|_| {
-                let mut rng = thread_rng();
-                camera
-                    .get_ray(
-                        (i as f64 + offset_distribution.sample(&mut rng)) / args.width as f64,
-                        (j as f64 + offset_distribution.sample(&mut rng)) / args.height as f64,
-                    )
-                    .colour(&scene)
-            })
-            .sum();
-        let avg_colour = colour_sum / args.samples as f64;
+    let progress_bar = ProgressBar::with_draw_target(
+        Some(args.width as u64 * args.height as u64),
+        ProgressDrawTarget::stdout_with_hz(10),
+    )
+    .with_style(
+        ProgressStyle::with_template("[{bar}] {percent}% - {elapsed} / {duration} {msg}")
+            .expect("We should be able to create the progress bar")
+            .progress_chars("=> "),
+    );
 
-        *pixel = avg_colour.into();
-    });
+    println!("Rendering scene...");
+
+    img.par_enumerate_pixels_mut()
+        .progress_with(progress_bar)
+        .for_each(|(i, j, pixel)| {
+            let colour_sum: Colour = (0..args.samples)
+                .into_par_iter()
+                .map(|_| {
+                    let mut rng = thread_rng();
+                    camera
+                        .get_ray(
+                            (i as f64 + offset_distribution.sample(&mut rng)) / args.width as f64,
+                            (j as f64 + offset_distribution.sample(&mut rng)) / args.height as f64,
+                        )
+                        .colour(&scene)
+                })
+                .sum();
+            let avg_colour = colour_sum / args.samples as f64;
+
+            *pixel = avg_colour.into();
+        });
+
+    println!("Rendered to {}", args.output);
 
     img.save(args.output)
         .wrap_err("When trying to save image buffer")?;

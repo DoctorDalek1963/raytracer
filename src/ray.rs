@@ -33,7 +33,7 @@ impl Ray {
             return v!(0);
         }
 
-        if let Some(hit) = object.hit(self, (0., f64::INFINITY)) {
+        if let Some(hit) = object.hit(self, (1e-200, f64::INFINITY)) {
             let new_ray = Self::new(
                 hit.intersection_point,
                 hit.surface_normal + Vec3::random_unit_vector(),

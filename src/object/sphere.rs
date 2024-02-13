@@ -1,30 +1,7 @@
-//! This module handles various objects that can exist in a scene.
+//! This module provides the [`Sphere`] type.
 
-use crate::{
-    ray::Ray,
-    vector::{Point, Vec3},
-};
-
-/// An object which a ray could hit.
-pub trait Object {
-    /// Does the give ray hit this object? If so, return information about the hit.
-    ///
-    /// It is assumed that `bounds.0 <= bounds.1`.
-    fn hit(&self, ray: &Ray, bounds: (f64, f64)) -> Option<Hit>;
-}
-
-/// Information about how a ray hit an object.
-pub struct Hit {
-    /// The point at which the ray hit the object.
-    pub intersection_point: Point,
-
-    /// Th surface normal vector at the intersection point. This vector should always be
-    /// pre-normalised.
-    pub surface_normal: Vec3,
-
-    /// The parameter `t` where the ray intersected the object. See [`Ray::at`].
-    pub t: f64,
-}
+use super::{Hit, Object};
+use crate::{ray::Ray, vector::Point};
 
 /// A simple sphere.
 #[derive(Clone, Debug, PartialEq)]
@@ -70,10 +47,12 @@ impl Object for Sphere {
 
             let intersection_point = ray.at(t);
             let surface_normal = (intersection_point - self.centre).normalise();
+            let front_face = ray.direction.dot(surface_normal) <= 0.;
 
             Some(Hit {
                 intersection_point,
                 surface_normal,
+                front_face,
                 t,
             })
         } else {

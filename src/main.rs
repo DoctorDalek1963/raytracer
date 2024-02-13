@@ -9,6 +9,7 @@ mod vector;
 use self::{ray::Ray, vector::v};
 use color_eyre::{eyre::Context, Result};
 use image::RgbImage;
+use object::Sphere;
 use rayon::iter::ParallelIterator;
 
 /// The width of the whole image.
@@ -27,6 +28,11 @@ fn main() -> Result<()> {
     let viewport_top_left = -vec_width / 2. + vec_height / 2. - vec_focal_length;
 
     let mut img = RgbImage::new(IMG_WIDTH, IMG_HEIGHT);
+    let scene = vec![
+        Sphere::new(v!(0, 0, -1), 0.5),
+        Sphere::new(v!(0, -100.5, -1), 100.),
+    ];
+
     img.par_enumerate_pixels_mut().for_each(|(i, j, pixel)| {
         let x_prop = i as f64 / IMG_WIDTH as f64;
         debug_assert!(
@@ -43,7 +49,7 @@ fn main() -> Result<()> {
         let pixel_pos_vec = viewport_top_left + x_prop * vec_width - y_prop * vec_height;
 
         let ray = Ray::new(v!(0), pixel_pos_vec);
-        *pixel = ray.colour().into();
+        *pixel = ray.colour(&scene).into();
     });
 
     img.save("./out.png")

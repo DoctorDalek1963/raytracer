@@ -1,7 +1,7 @@
 //! This module handles rays.
 
 use crate::{
-    object::{Object, Sphere},
+    object::Object,
     vector::{v, Colour, Point, Vec3},
 };
 
@@ -28,8 +28,8 @@ impl Ray {
     }
 
     /// Trace this ray and determine its colour.
-    pub fn colour(&self) -> Colour {
-        if let Some(hit) = Sphere::new(v!(0, 0, -1), 0.5).hit(self, (0., f64::INFINITY)) {
+    pub fn colour(&self, object: &impl Object) -> Colour {
+        if let Some(hit) = object.hit(self, (0., f64::INFINITY)) {
             hit.surface_normal.normal_to_colour()
         } else {
             let height = ((self.direction / -self.direction.z).y + 1.) / 2.;

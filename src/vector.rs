@@ -103,6 +103,13 @@ impl Vec3 {
             (self.z * 255.).round() as u8,
         ]
     }
+
+    /// Assuming this is a normal vector, convert it to colour space. If the vector is not
+    /// normalised, then this function will return garbage data.
+    #[inline]
+    pub fn normal_to_colour(self) -> Self {
+        self.map(|x| (x + 1.) / 2.)
+    }
 }
 
 impl From<Vec3> for [u8; 3] {

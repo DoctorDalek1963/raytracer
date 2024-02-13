@@ -6,7 +6,6 @@ use crate::{
     ray::Ray,
     vector::{Point, Vec3},
 };
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 pub use self::sphere::Sphere;
 
@@ -40,23 +39,20 @@ pub type Scene = Vec<Box<dyn Object + Sync>>;
 
 impl Object for Scene {
     fn hit(&self, ray: &Ray, bounds: (f64, f64)) -> Option<Hit> {
-        self.par_iter()
+        self.iter()
             .map(|object| object.hit(ray, bounds))
-            .reduce(
-                || None,
-                |a, b| match (a, b) {
-                    (Some(a), Some(b)) => {
-                        if a.t < b.t {
-                            Some(a)
-                        } else {
-                            Some(b)
-                        }
+            .fold(None, |a, b| match (a, b) {
+                (Some(a), Some(b)) => {
+                    if a.t < b.t {
+                        Some(a)
+                    } else {
+                        Some(b)
                     }
-                    (Some(a), None) => Some(a),
-                    (None, Some(b)) => Some(b),
-                    (None, None) => None,
-                },
-            )
+                }
+                (Some(a), None) => Some(a),
+                (None, Some(b)) => Some(b),
+                (None, None) => None,
+            })
     }
 }
 
@@ -67,22 +63,19 @@ where
     T: Object + Sync,
 {
     fn hit(&self, ray: &Ray, bounds: (f64, f64)) -> Option<Hit> {
-        self.par_iter()
+        self.iter()
             .map(|object| object.hit(ray, bounds))
-            .reduce(
-                || None,
-                |a, b| match (a, b) {
-                    (Some(a), Some(b)) => {
-                        if a.t < b.t {
-                            Some(a)
-                        } else {
-                            Some(b)
-                        }
+            .fold(None, |a, b| match (a, b) {
+                (Some(a), Some(b)) => {
+                    if a.t < b.t {
+                        Some(a)
+                    } else {
+                        Some(b)
                     }
-                    (Some(a), None) => Some(a),
-                    (None, Some(b)) => Some(b),
-                    (None, None) => None,
-                },
-            )
+                }
+                (Some(a), None) => Some(a),
+                (None, Some(b)) => Some(b),
+                (None, None) => None,
+            })
     }
 }

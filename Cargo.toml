@@ -9,6 +9,7 @@ license = "GPL-3.0"
 description = "A simple raytracer based on <https://rs118.uwcs.co.uk/raytracer.html>"
 
 [dependencies]
+clap = { version = "4.5.0", features = ["derive"] }
 color-eyre = "0.6.2"
 image = { version = "0.24.8", features = ["rayon"] }
 rayon = "1.8.1"

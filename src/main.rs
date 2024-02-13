@@ -33,6 +33,10 @@ struct Args {
     #[arg(long, short, default_value_t = 100)]
     samples: u16,
 
+    /// How many times should each ray bounce?
+    #[arg(long, short, default_value_t = 50)]
+    bounces: u16,
+
     /// The path to the output image file.
     #[arg(long, short, default_value = "./out.png")]
     output: String,
@@ -58,9 +62,11 @@ fn main() -> Result<()> {
         ProgressDrawTarget::stdout_with_hz(10),
     )
     .with_style(
-        ProgressStyle::with_template("[{bar}] {percent}% - {elapsed} / {duration} {msg}")
-            .expect("We should be able to create the progress bar")
-            .progress_chars("=> "),
+        ProgressStyle::with_template(
+            "[{bar}] {percent}% - {elapsed_precise} / {duration_precise} {msg}",
+        )
+        .expect("We should be able to create the progress bar")
+        .progress_chars("=> "),
     );
 
     println!("Rendering scene...");
@@ -77,7 +83,7 @@ fn main() -> Result<()> {
                             (i as f64 + offset_distribution.sample(&mut rng)) / args.width as f64,
                             (j as f64 + offset_distribution.sample(&mut rng)) / args.height as f64,
                         )
-                        .colour(&scene)
+                        .colour(&scene, args.bounces)
                 })
                 .sum();
             let avg_colour = colour_sum / args.samples as f64;

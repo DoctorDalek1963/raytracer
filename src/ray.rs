@@ -28,11 +28,19 @@ impl Ray {
     }
 
     /// Trace this ray and determine its colour.
-    pub fn colour(&self, object: &impl Object) -> Colour {
+    pub fn colour(&self, object: &impl Object, bounces: u16) -> Colour {
+        if bounces == 0 {
+            return v!(0);
+        }
+
         if let Some(hit) = object.hit(self, (0., f64::INFINITY)) {
-            hit.surface_normal.normal_to_colour()
+            let new_ray = Self::new(
+                hit.intersection_point,
+                hit.surface_normal + Vec3::random_unit_vector(),
+            );
+            0.5 * new_ray.colour(object, bounces - 1)
         } else {
-            let height = ((self.direction / -self.direction.z).y + 1.) / 2.;
+            let height = 0.5 * (self.direction.normalise().y + 1.);
             debug_assert!(
                 (0.0..=1.0).contains(&height),
                 "The height must be in [0, 1]: {height}"

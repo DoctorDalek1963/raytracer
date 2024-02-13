@@ -1,7 +1,13 @@
 //! This module handles vectors.
 
-use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use std::iter::Sum;
+use core::{
+    iter::Sum,
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+};
+use rand::{
+    distributions::{Distribution, Uniform},
+    thread_rng,
+};
 
 /// An RGB colour.
 pub type Colour = Vec3;
@@ -105,10 +111,14 @@ impl Vec3 {
             "The z value must be in [0, 1]: {}",
             self.z
         );
+
+        // We're taking square roots to adjust for gamma. I don't understand why we have to do
+        // this, but it makes the image look a lot better. See
+        // <https://rs118.uwcs.co.uk/raytracer.html#task-73-gamma-rays> for details.
         [
-            (self.x * 255.).round() as u8,
-            (self.y * 255.).round() as u8,
-            (self.z * 255.).round() as u8,
+            (self.x.sqrt() * 255.).round() as u8,
+            (self.y.sqrt() * 255.).round() as u8,
+            (self.z.sqrt() * 255.).round() as u8,
         ]
     }
 
@@ -117,6 +127,19 @@ impl Vec3 {
     #[inline]
     pub fn normal_to_colour(self) -> Self {
         self.map(|x| (x + 1.) / 2.)
+    }
+
+    /// Generate a random unit vector.
+    pub fn random_unit_vector() -> Self {
+        let distribution = Uniform::new_inclusive(-1., 1.);
+        let mut rng = thread_rng();
+
+        Self {
+            x: distribution.sample(&mut rng),
+            y: distribution.sample(&mut rng),
+            z: distribution.sample(&mut rng),
+        }
+        .normalise()
     }
 }
 

@@ -2,16 +2,18 @@
 
 #![cfg_attr(debug_assertions, allow(dead_code))]
 
+mod camera;
 mod object;
 mod ray;
 mod vector;
 
-use self::{ray::Ray, vector::v};
+use self::vector::v;
+use camera::Camera;
 use clap::Parser;
 use color_eyre::{eyre::Context, Result};
 use image::RgbImage;
 use object::Sphere;
-use rand::random;
+use rand::{distributions::Distribution, thread_rng};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use vector::Colour;
 
@@ -40,11 +42,7 @@ fn main() -> Result<()> {
 
     let args = Args::parse();
 
-    let vec_height = v!(0, 2, 0);
-    let vec_width = v!(2. * args.width as f64 / args.height as f64, 0, 0);
-    let vec_focal_length = v!(0, 0, 1);
-
-    let viewport_top_left = -vec_width / 2. + vec_height / 2. - vec_focal_length;
+    let camera = Camera::new(args.width, args.height);
 
     let mut img = RgbImage::new(args.width, args.height);
     let scene = vec![
@@ -52,26 +50,19 @@ fn main() -> Result<()> {
         Sphere::new(v!(0, -100.5, -1), 100.),
     ];
 
+    let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);
+
     img.par_enumerate_pixels_mut().for_each(|(i, j, pixel)| {
         let colour_sum: Colour = (0..args.samples)
             .into_par_iter()
             .map(|_| {
-                let x_prop = (i as f64 + random::<f64>()) / args.width as f64;
-                debug_assert!(
-                    (0.0..=1.0).contains(&x_prop),
-                    "The x proportion must be in [0, 1]: {x_prop}"
-                );
-
-                let y_prop = (j as f64 + random::<f64>()) / args.height as f64;
-                debug_assert!(
-                    (0.0..=1.0).contains(&y_prop),
-                    "The y proportion must be in [0, 1]: {y_prop}"
-                );
-
-                let pixel_pos_vec = viewport_top_left + x_prop * vec_width - y_prop * vec_height;
-
-                let ray = Ray::new(v!(0), pixel_pos_vec);
-                ray.colour(&scene)
+                let mut rng = thread_rng();
+                camera
+                    .get_ray(
+                        (i as f64 + offset_distribution.sample(&mut rng)) / args.width as f64,
+                        (j as f64 + offset_distribution.sample(&mut rng)) / args.height as f64,
+                    )
+                    .colour(&scene)
             })
             .sum();
         let avg_colour = colour_sum / args.samples as f64;

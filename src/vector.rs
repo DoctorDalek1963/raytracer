@@ -1,6 +1,7 @@
 //! This module handles vectors.
 
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::iter::Sum;
 
 /// An RGB colour.
 pub type Colour = Vec3;
@@ -17,6 +18,13 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    /// The zero vector.
+    pub const ZERO: Self = Self {
+        x: 0.,
+        y: 0.,
+        z: 0.,
+    };
+
     /// Create a new vector with the given coordinates.
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
@@ -217,6 +225,12 @@ impl Neg for Vec3 {
             y: -self.y,
             z: -self.z,
         }
+    }
+}
+
+impl Sum for Vec3 {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Vec3::ZERO, |acc, v| acc + v)
     }
 }
 

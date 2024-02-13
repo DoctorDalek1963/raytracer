@@ -11,7 +11,9 @@ use clap::Parser;
 use color_eyre::{eyre::Context, Result};
 use image::RgbImage;
 use object::Sphere;
-use rayon::iter::ParallelIterator;
+use rand::random;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use vector::Colour;
 
 #[derive(clap::Parser)]
 #[command(author, version, about)]
@@ -23,6 +25,10 @@ struct Args {
     /// The full height of the image.
     #[arg(long, short = 'H', default_value_t = 1080)]
     height: u32,
+
+    /// How many samples should we use per pixel for the antialiasing?
+    #[arg(long, short, default_value_t = 100)]
+    samples: u16,
 
     /// The path to the output image file.
     #[arg(long, short, default_value = "./out.png")]
@@ -47,22 +53,30 @@ fn main() -> Result<()> {
     ];
 
     img.par_enumerate_pixels_mut().for_each(|(i, j, pixel)| {
-        let x_prop = i as f64 / args.width as f64;
-        debug_assert!(
-            (0.0..=1.0).contains(&x_prop),
-            "The x proportion must be in [0, 1]: {x_prop}"
-        );
+        let colour_sum: Colour = (0..args.samples)
+            .into_par_iter()
+            .map(|_| {
+                let x_prop = (i as f64 + random::<f64>()) / args.width as f64;
+                debug_assert!(
+                    (0.0..=1.0).contains(&x_prop),
+                    "The x proportion must be in [0, 1]: {x_prop}"
+                );
 
-        let y_prop = j as f64 / args.height as f64;
-        debug_assert!(
-            (0.0..=1.0).contains(&y_prop),
-            "The y proportion must be in [0, 1]: {y_prop}"
-        );
+                let y_prop = (j as f64 + random::<f64>()) / args.height as f64;
+                debug_assert!(
+                    (0.0..=1.0).contains(&y_prop),
+                    "The y proportion must be in [0, 1]: {y_prop}"
+                );
 
-        let pixel_pos_vec = viewport_top_left + x_prop * vec_width - y_prop * vec_height;
+                let pixel_pos_vec = viewport_top_left + x_prop * vec_width - y_prop * vec_height;
 
-        let ray = Ray::new(v!(0), pixel_pos_vec);
-        *pixel = ray.colour(&scene).into();
+                let ray = Ray::new(v!(0), pixel_pos_vec);
+                ray.colour(&scene)
+            })
+            .sum();
+        let avg_colour = colour_sum / args.samples as f64;
+
+        *pixel = avg_colour.into();
     });
 
     img.save(args.output)

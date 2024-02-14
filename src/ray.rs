@@ -19,7 +19,10 @@ pub struct Ray {
 impl Ray {
     /// Create a new ray with the given origin and direction.
     pub fn new(origin: Point, direction: Vec3) -> Self {
-        Self { origin, direction }
+        Self {
+            origin,
+            direction: direction.normalise(),
+        }
     }
 
     /// Get the point along this ray with parameter `t`.

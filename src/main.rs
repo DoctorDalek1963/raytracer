@@ -10,8 +10,8 @@ mod vector;
 
 use self::{
     camera::Camera,
-    material::Lambertian,
-    object::Sphere,
+    material::{Lambertian, Metal},
+    object::{Object, Sphere},
     vector::{v, Colour},
 };
 use clap::Parser;
@@ -54,9 +54,23 @@ fn main() -> Result<()> {
     let camera = Camera::new(args.width, args.height);
 
     let mut img = RgbImage::new(args.width, args.height);
-    let scene = vec![
-        Sphere::new(v!(0, 0, -1), 0.5, Lambertian::new(v!(0.5))),
-        Sphere::new(v!(0, -100.5, -1), 100., Lambertian::new(v!(0, 0.7, 0))),
+    let scene: Vec<Box<dyn Object + Sync>> = vec![
+        Box::new(Sphere::new(
+            v!(0, 0, -1),
+            0.5,
+            Lambertian::new(v!(0.7, 0.3, 0.3)),
+        )),
+        Box::new(Sphere::new(v!(-1, 0, -1), 0.5, Metal::new(v!(0.8), 0.3))),
+        Box::new(Sphere::new(
+            v!(1, 0, -1),
+            0.5,
+            Metal::new(v!(0.8, 0.6, 0.2), 1.),
+        )),
+        Box::new(Sphere::new(
+            v!(0, -100.5, -1),
+            100.,
+            Lambertian::new(v!(0.8, 0.8, 0)),
+        )),
     ];
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);

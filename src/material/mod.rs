@@ -1,10 +1,11 @@
 //! This module deals with materials.
 
 mod lambertian;
+mod metal;
 
 use crate::{object::Hit, ray::Ray, vector::Vec3};
 
-pub use self::lambertian::Lambertian;
+pub use self::{lambertian::Lambertian, metal::Metal};
 
 /// A trait to represent a material.
 pub trait Material {
@@ -19,4 +20,9 @@ pub struct Reflection {
 
     /// How the colour gets attenuated by the reflection.
     pub colour_attenuation: Vec3,
+}
+
+/// Perfectly reflect a ray from a surface, given the normal vector of the tangent plane.
+pub fn reflect(incident_ray: Vec3, normal: Vec3) -> Vec3 {
+    incident_ray - 2. * normal * incident_ray.dot(normal)
 }

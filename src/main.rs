@@ -3,20 +3,24 @@
 #![cfg_attr(debug_assertions, allow(dead_code))]
 
 mod camera;
+mod material;
 mod object;
 mod ray;
 mod vector;
 
-use self::vector::v;
-use camera::Camera;
+use self::{
+    camera::Camera,
+    material::Lambertian,
+    object::Sphere,
+    vector::{v, Colour},
+};
 use clap::Parser;
 use color_eyre::{eyre::Context, Result};
 use image::RgbImage;
 use indicatif::{ParallelProgressIterator, ProgressBar, ProgressDrawTarget, ProgressStyle};
-use object::Sphere;
 use rand::{distributions::Distribution, thread_rng};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use vector::Colour;
+use std::time::Instant;
 
 #[derive(clap::Parser)]
 #[command(author, version, about)]
@@ -51,8 +55,8 @@ fn main() -> Result<()> {
 
     let mut img = RgbImage::new(args.width, args.height);
     let scene = vec![
-        Sphere::new(v!(0, 0, -1), 0.5),
-        Sphere::new(v!(0, -100.5, -1), 100.),
+        Sphere::new(v!(0, 0, -1), 0.5, Lambertian::new(v!(0.5))),
+        Sphere::new(v!(0, -100.5, -1), 100., Lambertian::new(v!(0, 0.7, 0))),
     ];
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);
@@ -70,6 +74,7 @@ fn main() -> Result<()> {
     );
 
     println!("Rendering scene...");
+    let start_time = Instant::now();
 
     img.par_enumerate_pixels_mut()
         .progress_with(progress_bar)
@@ -91,6 +96,8 @@ fn main() -> Result<()> {
             *pixel = avg_colour.into();
         });
 
+    let time_taken = start_time.elapsed();
+    println!("Rendering took {time_taken:?}");
     println!("Rendered to {}", args.output);
 
     img.save(args.output)

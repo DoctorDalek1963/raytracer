@@ -1,6 +1,7 @@
 //! This module handles rays.
 
 use crate::{
+    material::Reflection,
     object::Object,
     vector::{v, Colour, Point, Vec3},
 };
@@ -34,11 +35,15 @@ impl Ray {
         }
 
         if let Some(hit) = object.hit(self, (1e-200, f64::INFINITY)) {
-            let new_ray = Self::new(
-                hit.intersection_point,
-                hit.surface_normal + Vec3::random_unit_vector(),
-            );
-            0.5 * new_ray.colour(object, bounces - 1)
+            if let Some(Reflection {
+                reflected_ray,
+                colour_attenuation,
+            }) = hit.reflection
+            {
+                colour_attenuation.mul_elementwise(reflected_ray.colour(object, bounces - 1))
+            } else {
+                v!(0)
+            }
         } else {
             let height = 0.5 * (self.direction.normalise().y + 1.);
             debug_assert!(

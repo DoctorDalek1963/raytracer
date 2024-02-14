@@ -3,6 +3,7 @@
 mod sphere;
 
 use crate::{
+    material::Reflection,
     ray::Ray,
     vector::{Point, Vec3},
 };
@@ -31,6 +32,9 @@ pub struct Hit {
 
     /// The parameter `t` where the ray intersected the object. See [`Ray::at`].
     pub t: f64,
+
+    /// A possible reflection from the object.
+    pub reflection: Option<Reflection>,
 }
 
 /// A collection of objects. If your scene only contains objects of one type, just use a vec of

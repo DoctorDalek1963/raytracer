@@ -1,26 +1,32 @@
 //! This module provides the [`Sphere`] type.
 
 use super::{Hit, Object};
-use crate::{ray::Ray, vector::Point};
+use crate::{material::Material, ray::Ray, vector::Point};
 
 /// A simple sphere.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Sphere {
+pub struct Sphere<M: Material> {
     /// The centre of the sphere.
     centre: Point,
 
     /// The radius of the sphere.
     radius: f64,
+
+    material: M,
 }
 
-impl Sphere {
+impl<M: Material> Sphere<M> {
     /// Create a new sphere.
-    pub fn new(centre: Point, radius: f64) -> Self {
-        Self { centre, radius }
+    pub fn new(centre: Point, radius: f64, material: M) -> Self {
+        Self {
+            centre,
+            radius,
+            material,
+        }
     }
 }
 
-impl Object for Sphere {
+impl<M: Material> Object for Sphere<M> {
     fn hit(&self, ray: &Ray, bounds: (f64, f64)) -> Option<Hit> {
         let centre_to_ray_origin = ray.origin - self.centre;
 
@@ -49,12 +55,17 @@ impl Object for Sphere {
             let surface_normal = (intersection_point - self.centre).normalise();
             let front_face = ray.direction.dot(surface_normal) <= 0.;
 
-            Some(Hit {
+            let mut hit = Hit {
                 intersection_point,
                 surface_normal,
                 front_face,
                 t,
-            })
+                reflection: None,
+            };
+
+            hit.reflection = self.material.scatter(ray, &hit);
+
+            Some(hit)
         } else {
             None
         }

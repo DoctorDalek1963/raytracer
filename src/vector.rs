@@ -141,6 +141,12 @@ impl Vec3 {
         }
         .normalise()
     }
+
+    /// Is this vector equal to zero (within a tolerance of `1e-10`)?
+    #[inline]
+    pub fn is_zero(&self) -> bool {
+        self.x.abs() <= 1e-10 && self.y.abs() <= 1e-10 && self.z.abs() <= 1e-10
+    }
 }
 
 impl From<Vec3> for [u8; 3] {

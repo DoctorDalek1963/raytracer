@@ -10,7 +10,7 @@ mod vector;
 
 use self::{
     camera::Camera,
-    material::{Lambertian, Metal},
+    material::{Dielectric, Lambertian, Metal},
     object::{Object, Sphere},
     vector::{v, Colour},
 };
@@ -19,7 +19,7 @@ use color_eyre::{eyre::Context, Result};
 use image::RgbImage;
 use indicatif::{ParallelProgressIterator, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use rand::{distributions::Distribution, thread_rng};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::ParallelIterator;
 use std::time::Instant;
 
 #[derive(clap::Parser)]
@@ -60,11 +60,11 @@ fn main() -> Result<()> {
             0.5,
             Lambertian::new(v!(0.7, 0.3, 0.3)),
         )),
-        Box::new(Sphere::new(v!(-1, 0, -1), 0.5, Metal::new(v!(0.8), 0.3))),
+        Box::new(Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(1.5))),
         Box::new(Sphere::new(
             v!(1, 0, -1),
             0.5,
-            Metal::new(v!(0.8, 0.6, 0.2), 1.),
+            Metal::new(v!(0.8, 0.6, 0.2), 0.7),
         )),
         Box::new(Sphere::new(
             v!(0, -100.5, -1),
@@ -94,7 +94,7 @@ fn main() -> Result<()> {
         .progress_with(progress_bar)
         .for_each(|(i, j, pixel)| {
             let colour_sum: Colour = (0..args.samples)
-                .into_par_iter()
+                .into_iter()
                 .map(|_| {
                     let mut rng = thread_rng();
                     camera

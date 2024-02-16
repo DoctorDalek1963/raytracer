@@ -53,7 +53,11 @@ impl<M: Material> Object for Sphere<M> {
 
             let intersection_point = ray.at(t);
             let surface_normal = (intersection_point - self.centre).normalise();
-            let front_face = ray.direction.dot(surface_normal) <= 0.;
+            let (surface_normal, front_face) = if ray.direction.dot(surface_normal) > 0. {
+                (-surface_normal, false)
+            } else {
+                (surface_normal, true)
+            };
 
             let mut hit = Hit {
                 intersection_point,

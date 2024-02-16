@@ -37,7 +37,7 @@ impl Ray {
             return v!(0);
         }
 
-        if let Some(hit) = object.hit(self, (1e-200, f64::INFINITY)) {
+        if let Some(hit) = object.hit(self, (1e-5, f64::INFINITY)) {
             if let Some(Reflection {
                 reflected_ray,
                 colour_attenuation,

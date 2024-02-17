@@ -60,16 +60,21 @@ fn main() -> Result<()> {
             0.5,
             Lambertian::new(v!(0.7, 0.3, 0.3)),
         )),
-        Box::new(Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(1.5))),
+        Box::new(Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(v!(1), 1.5))),
         Box::new(Sphere::new(
             v!(1, 0, -1),
             0.5,
             Metal::new(v!(0.8, 0.6, 0.2), 0.7),
         )),
         Box::new(Sphere::new(
+            v!(-1.8, 0, -2),
+            0.3,
+            Lambertian::new(v!(1, 0.6, 1)),
+        )),
+        Box::new(Sphere::new(
             v!(0, -100.5, -1),
             100.,
-            Lambertian::new(v!(0.8, 0.8, 0)),
+            Lambertian::new(v!(0.8)),
         )),
     ];
 

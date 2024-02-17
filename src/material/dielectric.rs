@@ -3,25 +3,29 @@
 use rand::random;
 
 use crate::{
-    material::{refract, Material, Reflection},
+    material::{reflect, reflectance, refract, Material, Reflection},
     object::Hit,
     ray::Ray,
-    vector::v,
+    vector::Colour,
 };
-
-use super::{reflect, reflectance};
 
 /// A transparent material like glass.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Dielectric {
+    /// The colour tint of the material.
+    pub colour: Colour,
+
     /// The ratio of the refractive index of the external material to the refractive index of the
     /// internal material.
     pub refraction_ratio: f64,
 }
 
 impl Dielectric {
-    pub fn new(refraction_ratio: f64) -> Self {
-        Self { refraction_ratio }
+    pub fn new(colour: Colour, refraction_ratio: f64) -> Self {
+        Self {
+            colour,
+            refraction_ratio,
+        }
     }
 }
 
@@ -46,7 +50,7 @@ impl Material for Dielectric {
 
         Some(Reflection {
             reflected_ray: Ray::new(hit.intersection_point, scatter_direction),
-            colour_attenuation: v!(1),
+            colour_attenuation: self.colour,
         })
     }
 }

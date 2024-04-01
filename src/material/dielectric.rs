@@ -1,13 +1,12 @@
 //! This module provides the [`Dielectric`] material.
 
-use rand::random;
-
 use crate::{
     material::{reflect, reflectance, refract, Material, Reflection},
     object::Hit,
     ray::Ray,
     vector::Colour,
 };
+use rand::random;
 
 /// A transparent material like glass.
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -5,7 +5,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
-    cargo2nix.url = "github:cargo2nix/cargo2nix";
+    cargo2nix = {
+      url = "github:cargo2nix/cargo2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {flake-parts, ...}:

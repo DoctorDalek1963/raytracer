@@ -2,7 +2,7 @@
 
 use crate::{
     ray::Ray,
-    vector::{v, Point, Vec3},
+    vector::{Point, Vec3},
 };
 
 /// A simple camera.
@@ -23,17 +23,28 @@ pub struct Camera {
 impl Camera {
     /// Create a new camera with the given width and height in pixels, and the vertical FOV
     /// measured in degrees.
-    pub fn new(width: u32, height: u32, vertical_fov_degrees: f64) -> Self {
+    pub fn new(
+        width: u32,
+        height: u32,
+        vertical_fov_degrees: f64,
+        look_from: Point,
+        look_at: Point,
+        view_up: Vec3,
+    ) -> Self {
+        let w = (look_from - look_at).normalise();
+        let u = view_up.cross(w).normalise();
+        let v = w.cross(u).normalise();
+
         let h = f64::tan(vertical_fov_degrees.to_radians() / 2.);
         let two_h = 2. * h;
         let aspect_ratio = width as f64 / height as f64;
 
-        let viewport_height = v!(0, two_h, 0);
-        let viewport_width = v!(two_h * aspect_ratio, 0, 0);
+        let viewport_height = v * two_h;
+        let viewport_width = u * two_h * aspect_ratio;
 
         Self {
-            position: v!(0),
-            viewport_top_left: -viewport_width / 2. + viewport_height / 2. - v!(0, 0, 1),
+            position: look_from,
+            viewport_top_left: -viewport_width / 2. + viewport_height / 2. - w,
             viewport_height,
             viewport_width,
         }

@@ -51,15 +51,13 @@ fn main() -> Result<()> {
 
     let args = Args::parse();
 
-    let camera = Camera::new(args.width, args.height);
+    let camera = Camera::new(args.width, args.height, 90.);
 
     let mut img = RgbImage::new(args.width, args.height);
+    let r = f64::cos(std::f64::consts::PI / 4.);
     let scene = dyn_scene_vec![
-        Sphere::new(v!(0, 0, -1), 0.5, Lambertian::new(v!(0.7, 0.3, 0.3)),),
-        Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(v!(1), 1.5)),
-        Sphere::new(v!(1, 0, -1), 0.5, Metal::new(v!(0.8, 0.6, 0.2), 0.7),),
-        Sphere::new(v!(-1.8, 0, -2), 0.3, Lambertian::new(v!(1, 0.6, 1)),),
-        Sphere::new(v!(0, -100.5, -1), 100., Lambertian::new(v!(0.8)),),
+        Sphere::new(v!(-r, 0, -1), r, Lambertian::new(v!(0, 0, 0.9)),),
+        Sphere::new(v!(r, 0, -1), r, Lambertian::new(v!(0.9, 0, 0)),),
     ];
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);

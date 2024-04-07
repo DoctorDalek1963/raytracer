@@ -21,10 +21,15 @@ pub struct Camera {
 }
 
 impl Camera {
-    /// Create a new camera with the given width and height in pixels.
-    pub fn new(width: u32, height: u32) -> Self {
-        let viewport_height = v!(0, 2, 0);
-        let viewport_width = v!(2. * width as f64 / height as f64, 0, 0);
+    /// Create a new camera with the given width and height in pixels, and the vertical FOV
+    /// measured in degrees.
+    pub fn new(width: u32, height: u32, vertical_fov_degrees: f64) -> Self {
+        let h = f64::tan(vertical_fov_degrees.to_radians() / 2.);
+        let two_h = 2. * h;
+        let aspect_ratio = width as f64 / height as f64;
+
+        let viewport_height = v!(0, two_h, 0);
+        let viewport_width = v!(two_h * aspect_ratio, 0, 0);
 
         Self {
             position: v!(0),

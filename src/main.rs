@@ -9,7 +9,7 @@ mod ray;
 mod vector;
 
 use self::{
-    camera::Camera,
+    camera::{Camera, CameraOpts},
     material::{Dielectric, Lambertian, Metal},
     object::{dyn_scene_vec, Sphere},
     vector::{v, Colour},
@@ -51,14 +51,14 @@ fn main() -> Result<()> {
 
     let args = Args::parse();
 
-    let camera = Camera::new(
-        args.width,
-        args.height,
-        30.,
-        v!(-2, 2, 1),
-        v!(0, 0, -1),
-        v!(0, 1, 0),
-    );
+    let camera = Camera::from(CameraOpts {
+        width: args.width,
+        height: args.height,
+        vertical_fov_degrees: 30.,
+        look_from: v!(-2, 2, 1),
+        look_at: v!(0, 0, -1),
+        view_up: v!(0, 1, 0),
+    });
 
     let mut img = RgbImage::new(args.width, args.height);
     let scene = dyn_scene_vec![

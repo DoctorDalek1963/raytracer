@@ -20,16 +20,44 @@ pub struct Camera {
     viewport_width: Vec3,
 }
 
+/// The options needed to construct a camera.
+pub struct CameraOpts {
+    /// The full width of the final image.
+    pub width: u32,
+
+    /// The full height of the final image.
+    pub height: u32,
+
+    /// The vertical field of view, in degrees.
+    pub vertical_fov_degrees: f64,
+
+    /// The point where the camera is looking from.
+    pub look_from: Point,
+
+    /// The point that the camera is looking at.
+    pub look_at: Point,
+
+    /// A vector that decides which way is up for the camera.
+    pub view_up: Vec3,
+}
+
+impl From<CameraOpts> for Camera {
+    fn from(value: CameraOpts) -> Self {
+        Self::from_camera_opts(value)
+    }
+}
+
 impl Camera {
-    /// Create a new camera with the given width and height in pixels, and the vertical FOV
-    /// measured in degrees.
-    pub fn new(
-        width: u32,
-        height: u32,
-        vertical_fov_degrees: f64,
-        look_from: Point,
-        look_at: Point,
-        view_up: Vec3,
+    /// Create a new camera from the given options.
+    pub fn from_camera_opts(
+        CameraOpts {
+            width,
+            height,
+            vertical_fov_degrees,
+            look_from,
+            look_at,
+            view_up,
+        }: CameraOpts,
     ) -> Self {
         let w = (look_from - look_at).normalise();
         let u = view_up.cross(w).normalise();

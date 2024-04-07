@@ -51,13 +51,18 @@ fn main() -> Result<()> {
 
     let args = Args::parse();
 
+    let look_from = v!(3, 3, 2);
+    let look_at = v!(0, 0, -1);
+
     let camera = Camera::from(CameraOpts {
         width: args.width,
         height: args.height,
-        vertical_fov_degrees: 30.,
-        look_from: v!(-2, 2, 1),
-        look_at: v!(0, 0, -1),
+        vertical_fov_degrees: 20.,
+        look_from,
+        look_at,
         view_up: v!(0, 1, 0),
+        aperture_width: 0.8,
+        focus_distance: (look_from - look_at).len(),
     });
 
     let mut img = RgbImage::new(args.width, args.height);

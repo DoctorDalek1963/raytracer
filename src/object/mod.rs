@@ -42,6 +42,7 @@ pub struct Hit {
 pub type Scene = Vec<Box<dyn Object + Sync>>;
 
 /// Create a `Vec<Box<dyn `[`Object`]` + Sync>>` without having to wrap every element in a [`Box`].
+#[allow(unused_macros)]
 macro_rules! dyn_scene_vec {
     ($($elem:expr),*$(,)?) => {
         vec![$((
@@ -51,6 +52,7 @@ macro_rules! dyn_scene_vec {
     };
 }
 
+#[allow(unused_imports)]
 pub(crate) use dyn_scene_vec;
 
 impl Object for Scene {
@@ -70,6 +72,69 @@ impl Object for Scene {
                 (None, None) => None,
             })
     }
+}
+
+/// Generate a random scene.
+pub fn random_scene() -> Scene {
+    use crate::{
+        material::{Dielectric, Lambertian, Metal},
+        vector::v,
+    };
+
+    fn rand_f64() -> f64 {
+        rand::random()
+    }
+
+    let mut objects: Scene = Vec::with_capacity(4 + (11usize + 11 + 1).pow(2));
+
+    // Ground
+    objects.push(Box::new(Sphere::new(
+        v!(0, -1000, 0),
+        1000.0,
+        Lambertian::new(v!(0.5, 0.5, 0.5)),
+    )));
+
+    for a in -11..=11 {
+        for b in -11..=11 {
+            let a = a as f64;
+            let b = b as f64;
+            let material_choice = rand_f64();
+            let centre = v!(a + 0.75 * rand_f64(), 0.2, b + 0.75 * rand_f64());
+
+            #[allow(illegal_floating_point_literal_pattern)]
+            objects.push(match material_choice {
+                0.0..=0.8 => Box::new(Sphere::new(centre, 0.2, Lambertian::new(v!(rand_f64())))),
+                0.8..=0.95 => Box::new(Sphere::new(
+                    centre,
+                    0.2,
+                    Metal::new(v!(0.2 + rand_f64() * 0.8), rand_f64() / 1.5),
+                )),
+                0.95..=1.0 => Box::new(Sphere::new(
+                    centre,
+                    0.2,
+                    Dielectric::new(v!(0.5 + rand_f64() * 0.5), 1.5),
+                )),
+                _ => panic!("material_choice should always be in 0.0..=1.0"),
+            });
+        }
+    }
+
+    objects.push(Box::new(Sphere::new(
+        v!(0, 1, 0),
+        1.0,
+        Dielectric::new(v!(1), 1.5),
+    )));
+    objects.push(Box::new(Sphere::new(
+        v!(-4, 1, 0),
+        1.0,
+        Lambertian::new(v!(0.4, 0.2, 0.1)),
+    )));
+    objects.push(Box::new(Sphere::new(
+        v!(4, 1, 0),
+        1.0,
+        Metal::new(v!(0.7, 0.6, 0.5), 0.0),
+    )));
+    objects
 }
 
 // This impl uses generics rather than trait objects to allow for more efficent compiler

@@ -269,7 +269,7 @@ macro_rules! v {
         $crate::vector::Vec3::new(f64::from($x), f64::from($y), f64::from($z))
     };
     ($x:expr) => {
-        $crate::vector::Vec3::splat(f64::from($x))
+        $crate::vector::Vec3::new(f64::from($x), f64::from($x), f64::from($x))
     };
 }
 

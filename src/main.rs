@@ -10,8 +10,7 @@ mod vector;
 
 use self::{
     camera::{Camera, CameraOpts},
-    material::{Dielectric, Lambertian, Metal},
-    object::{dyn_scene_vec, Sphere},
+    object::random_scene,
     vector::{v, Colour},
 };
 use clap::Parser;
@@ -51,8 +50,8 @@ fn main() -> Result<()> {
 
     let args = Args::parse();
 
-    let look_from = v!(3, 3, 2);
-    let look_at = v!(0, 0, -1);
+    let look_from = v!(13, 2, 3);
+    let look_at = v!(0, 0, 0);
 
     let camera = Camera::from(CameraOpts {
         width: args.width,
@@ -61,17 +60,12 @@ fn main() -> Result<()> {
         look_from,
         look_at,
         view_up: v!(0, 1, 0),
-        aperture_width: 0.8,
-        focus_distance: (look_from - look_at).len(),
+        aperture_width: 0.1,
+        focus_distance: 10.,
     });
 
     let mut img = RgbImage::new(args.width, args.height);
-    let scene = dyn_scene_vec![
-        Sphere::new(v!(0, 0, -1), 0.5, Lambertian::new(v!(0.1, 0.2, 0.5)),),
-        Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(v!(0.95), 1.5),),
-        Sphere::new(v!(1, 0, -1), 0.5, Metal::new(v!(0.8, 0.6, 0.2), 0.),),
-        Sphere::new(v!(0, -100.5, -1), 100., Lambertian::new(v!(0.8, 0.8, 0.)),),
-    ];
+    let scene = random_scene();
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);
 

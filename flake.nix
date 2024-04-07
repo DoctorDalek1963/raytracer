@@ -5,8 +5,12 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
-    cargo2nix = {
-      url = "github:cargo2nix/cargo2nix";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    naersk = {
+      url = "github:nix-community/naersk";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -17,23 +21,26 @@
       perSystem = {system, ...}: let
         pkgs = import inputs.nixpkgs {
           inherit system;
-          overlays = [inputs.cargo2nix.overlays.default];
+          overlays = [(import inputs.rust-overlay)];
         };
 
-        rustPkgs = pkgs.rustBuilder.makePackageSet {
-          packageFun = import ./Cargo.nix;
-          rustVersion = "1.75.0";
-          packageOverrides = pkgs: pkgs.rustBuilder.overrides.all;
+        rust-toolchain = pkgs.rust-bin.stable.latest.default;
+
+        naersk = pkgs.callPackage inputs.naersk {
+          cargo = rust-toolchain;
+          rustc = rust-toolchain;
         };
       in rec {
-        devShells.default = rustPkgs.workspaceShell {
-          nativeBuildInputs = [inputs.cargo2nix.packages.${system}.default];
+        devShells.default = pkgs.mkShell {
+          nativeBuildInputs = [rust-toolchain];
         };
 
         packages = rec {
           default = raytracer;
 
-          raytracer = rustPkgs.workspace.raytracer {};
+          raytracer = naersk.buildPackage {
+            src = ./.;
+          };
         };
 
         apps = rec {

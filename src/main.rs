@@ -11,7 +11,7 @@ mod vector;
 use self::{
     camera::Camera,
     material::{Dielectric, Lambertian, Metal},
-    object::{Object, Sphere},
+    object::{dyn_scene_vec, Sphere},
     vector::{v, Colour},
 };
 use clap::Parser;
@@ -54,28 +54,12 @@ fn main() -> Result<()> {
     let camera = Camera::new(args.width, args.height);
 
     let mut img = RgbImage::new(args.width, args.height);
-    let scene: Vec<Box<dyn Object + Sync>> = vec![
-        Box::new(Sphere::new(
-            v!(0, 0, -1),
-            0.5,
-            Lambertian::new(v!(0.7, 0.3, 0.3)),
-        )),
-        Box::new(Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(v!(1), 1.5))),
-        Box::new(Sphere::new(
-            v!(1, 0, -1),
-            0.5,
-            Metal::new(v!(0.8, 0.6, 0.2), 0.7),
-        )),
-        Box::new(Sphere::new(
-            v!(-1.8, 0, -2),
-            0.3,
-            Lambertian::new(v!(1, 0.6, 1)),
-        )),
-        Box::new(Sphere::new(
-            v!(0, -100.5, -1),
-            100.,
-            Lambertian::new(v!(0.8)),
-        )),
+    let scene = dyn_scene_vec![
+        Sphere::new(v!(0, 0, -1), 0.5, Lambertian::new(v!(0.7, 0.3, 0.3)),),
+        Sphere::new(v!(-1, 0, -1), 0.5, Dielectric::new(v!(1), 1.5)),
+        Sphere::new(v!(1, 0, -1), 0.5, Metal::new(v!(0.8, 0.6, 0.2), 0.7),),
+        Sphere::new(v!(-1.8, 0, -2), 0.3, Lambertian::new(v!(1, 0.6, 1)),),
+        Sphere::new(v!(0, -100.5, -1), 100., Lambertian::new(v!(0.8)),),
     ];
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);

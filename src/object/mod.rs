@@ -41,6 +41,18 @@ pub struct Hit {
 /// that type.
 pub type Scene = Vec<Box<dyn Object + Sync>>;
 
+/// Create a `Vec<Box<dyn `[`Object`]` + Sync>>` without having to wrap every element in a [`Box`].
+macro_rules! dyn_scene_vec {
+    ($($elem:expr),*$(,)?) => {
+        vec![$((
+            ::std::boxed::Box::new($elem)
+            as ::std::boxed::Box<dyn $crate::object::Object + ::std::marker::Sync>
+        )),*]
+    };
+}
+
+pub(crate) use dyn_scene_vec;
+
 impl Object for Scene {
     fn hit(&self, ray: &Ray, bounds: (f64, f64)) -> Option<Hit> {
         self.iter()

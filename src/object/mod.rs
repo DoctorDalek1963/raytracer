@@ -39,15 +39,15 @@ pub struct Hit {
 
 /// A collection of objects. If your scene only contains objects of one type, just use a vec of
 /// that type.
-pub type Scene = Vec<Box<dyn Object + Sync>>;
+pub type Scene = Vec<Box<dyn Object + Sync + Send>>;
 
-/// Create a `Vec<Box<dyn `[`Object`]` + Sync>>` without having to wrap every element in a [`Box`].
+/// Create a `Vec<Box<dyn `[`Object`]` + Sync + Send>>` without having to wrap every element in a [`Box`].
 #[allow(unused_macros)]
 macro_rules! dyn_scene_vec {
     ($($elem:expr),*$(,)?) => {
         vec![$((
             ::std::boxed::Box::new($elem)
-            as ::std::boxed::Box<dyn $crate::object::Object + ::std::marker::Sync>
+            as ::std::boxed::Box<dyn $crate::object::Object + ::std::marker::Sync + ::std::marked::Send>
         )),*]
     };
 }

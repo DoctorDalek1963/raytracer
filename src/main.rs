@@ -88,7 +88,6 @@ fn main() -> Result<()> {
         .progress_with(progress_bar)
         .for_each(|(i, j, pixel)| {
             let colour_sum: Colour = (0..args.samples)
-                .into_iter()
                 .map(|_| {
                     let mut rng = thread_rng();
                     camera

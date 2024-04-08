@@ -175,7 +175,7 @@ impl Add for Vec3 {
 
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Self) {
-        *self = *self + rhs
+        *self = *self + rhs;
     }
 }
 

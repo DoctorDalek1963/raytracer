@@ -26,13 +26,26 @@
 
         rust-toolchain = pkgs.rust-bin.stable.latest.default;
 
+        buildInputs = with pkgs; [
+          # pkg-config
+          libxkbcommon
+          xorg.libX11
+          xorg.libXcursor
+          xorg.libXi
+          # xorg.libXrandr
+          # wayland
+        ];
+
         naersk = pkgs.callPackage inputs.naersk {
           cargo = rust-toolchain;
           rustc = rust-toolchain;
         };
       in rec {
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [rust-toolchain];
+          nativeBuildInputs = [rust-toolchain] ++ buildInputs;
+          shellHook = ''
+            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath buildInputs}"
+          '';
         };
 
         packages = rec {
@@ -40,6 +53,7 @@
 
           raytracer = naersk.buildPackage {
             src = ./.;
+            inherit buildInputs;
           };
         };
 

@@ -15,6 +15,8 @@ image = { version = "0.24.8", features = ["rayon"] }
 indicatif = { version = "0.17.8", features = ["rayon"] }
 rand = "0.8.5"
 rayon = "1.8.1"
+softbuffer = "0.4.1"
+winit = "0.29.15"
 
 [profile.dev]
 opt-level = 1

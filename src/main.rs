@@ -92,10 +92,19 @@ fn main() -> Result<()> {
         .progress_chars("=> "),
     );
 
+    let preview_scale_factor = if args.width > args.height {
+        args.width as f64 / 1280.
+    } else {
+        args.height as f64 / 720.
+    };
+
+    let preview_width = args.width as f64 / preview_scale_factor;
+    let preview_height = args.height as f64 / preview_scale_factor;
+
     let event_loop = EventLoop::new().unwrap();
     let window = Arc::new(
         WindowBuilder::new()
-            .with_inner_size(LogicalSize::new(args.width, args.height))
+            .with_inner_size(LogicalSize::new(preview_width, preview_height))
             .with_resizable(false)
             .with_title("Raytracer")
             .build(&event_loop)?,
@@ -172,10 +181,17 @@ fn main() -> Result<()> {
                 let mut buffer = surface.buffer_mut().unwrap();
                 let img = unsafe { &*img as &RgbImage };
 
+                let height = preview_height.floor() as u32;
+                let width = preview_width.floor() as u32;
+
                 for y in 0..height {
                     for x in 0..width {
                         let index = y * width + x;
-                        if let Some(pixel) = img.get_pixel_checked(x, y) {
+                        // TODO: Average out pixels in area?
+                        if let Some(pixel) = img.get_pixel_checked(
+                            (x as f64 * preview_scale_factor) as u32,
+                            (y as f64 * preview_scale_factor) as u32,
+                        ) {
                             let [r, g, b] = pixel.0;
                             buffer[index as usize] =
                                 b as u32 | ((g as u32) << 8) | ((r as u32) << 16);

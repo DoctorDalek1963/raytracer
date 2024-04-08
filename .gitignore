@@ -1,4 +1,8 @@
+# Rust
 /target
 out.png
+
+# Nix
 result
 .direnv/
+.pre-commit-config.yaml

@@ -26,6 +26,7 @@ use std::{
     time::{Duration, Instant},
 };
 use winit::{
+    dpi::LogicalSize,
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
@@ -94,6 +95,8 @@ fn main() -> Result<()> {
     let event_loop = EventLoop::new().unwrap();
     let window = Arc::new(
         WindowBuilder::new()
+            .with_inner_size(LogicalSize::new(args.width, args.height))
+            .with_resizable(false)
             .with_title("Raytracer")
             .build(&event_loop)?,
     );
@@ -142,7 +145,7 @@ fn main() -> Result<()> {
     thread::spawn({
         let window = window.clone();
         move || loop {
-            thread::sleep(Duration::from_millis(33));
+            thread::sleep(Duration::from_millis(100));
             window.request_redraw();
         }
     });
@@ -167,14 +170,19 @@ fn main() -> Result<()> {
                     .unwrap();
 
                 let mut buffer = surface.buffer_mut().unwrap();
-                for index in 0..(width * height) {
-                    let y = index / width;
-                    let x = index % width;
-                    let red = x % 255;
-                    let green = y % 255;
-                    let blue = (x * y) % 255;
+                let img = unsafe { &*img as &RgbImage };
 
-                    buffer[index as usize] = blue | (green << 8) | (red << 16);
+                for y in 0..height {
+                    for x in 0..width {
+                        let index = y * width + x;
+                        if let Some(pixel) = img.get_pixel_checked(x, y) {
+                            let [r, g, b] = pixel.0;
+                            buffer[index as usize] =
+                                b as u32 | ((g as u32) << 8) | ((r as u32) << 16);
+                        } else {
+                            buffer[index as usize] = 0;
+                        }
+                    }
                 }
 
                 buffer.present().unwrap();

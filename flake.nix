@@ -55,7 +55,13 @@
         };
       in rec {
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [rust-toolchain] ++ buildInputs;
+          nativeBuildInputs =
+            [
+              (rust-toolchain.override {
+                extensions = ["rust-analyzer" "rust-src" "rust-std"];
+              })
+            ]
+            ++ buildInputs;
           shellHook = ''
             ${config.pre-commit.installationScript}
             export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.lib.makeLibraryPath buildInputs}"

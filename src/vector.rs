@@ -161,6 +161,18 @@ impl From<Vec3> for image::Rgb<u8> {
     }
 }
 
+impl From<Vec3> for image::Rgb<f32> {
+    fn from(value: Vec3) -> Self {
+        image::Rgb([value.x as f32, value.y as f32, value.z as f32])
+    }
+}
+
+impl From<Vec3> for image::Rgb<f64> {
+    fn from(value: Vec3) -> Self {
+        image::Rgb([value.x, value.y, value.z])
+    }
+}
+
 impl Add for Vec3 {
     type Output = Self;
 

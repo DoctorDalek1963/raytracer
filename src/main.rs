@@ -15,7 +15,7 @@ use self::{
 };
 use clap::Parser;
 use color_eyre::{eyre::Context, Result};
-use image::RgbImage;
+use image::{DynamicImage, Rgb32FImage, RgbImage};
 use indicatif::{ParallelProgressIterator, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use rand::{distributions::Distribution, thread_rng};
 use rayon::iter::ParallelIterator;
@@ -75,7 +75,7 @@ fn main() -> Result<()> {
         focus_distance: 10.,
     });
 
-    let img = &mut RgbImage::new(args.width, args.height) as *mut _;
+    let float_img = &mut Rgb32FImage::new(args.width, args.height) as *mut _;
     let scene = random_scene();
 
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);
@@ -117,9 +117,10 @@ fn main() -> Result<()> {
 
     // Thread to actually do the raytracing
     thread::spawn({
-        let img = unsafe { &mut *img } as &mut RgbImage;
+        let float_img = unsafe { &mut *float_img } as &mut Rgb32FImage;
         move || {
-            img.par_enumerate_pixels_mut()
+            float_img
+                .par_enumerate_pixels_mut()
                 .progress_with(progress_bar)
                 .for_each(|(i, j, pixel)| {
                     let colour_sum: Colour = (0..args.samples)
@@ -142,11 +143,12 @@ fn main() -> Result<()> {
 
             let time_taken = start_time.elapsed();
             println!("Rendering took {time_taken:?}");
-            println!("Rendered to {}", args.output);
 
-            img.save(args.output)
+            RgbImage::from(DynamicImage::from(float_img.to_owned()))
+                .save(&args.output)
                 .wrap_err("When trying to save image buffer")
                 .unwrap();
+            println!("Rendered to {}", args.output);
         }
     });
 
@@ -179,7 +181,7 @@ fn main() -> Result<()> {
                     .unwrap();
 
                 let mut buffer = surface.buffer_mut().unwrap();
-                let img = unsafe { &*img as &RgbImage };
+                let float_img = unsafe { &*float_img as &Rgb32FImage };
 
                 let height = preview_height.floor() as u32;
                 let width = preview_width.floor() as u32;
@@ -188,13 +190,17 @@ fn main() -> Result<()> {
                     for x in 0..width {
                         let index = y * width + x;
                         // TODO: Average out pixels in area?
-                        if let Some(pixel) = img.get_pixel_checked(
+                        if let Some(pixel) = float_img.get_pixel_checked(
                             (x as f64 * preview_scale_factor) as u32,
                             (y as f64 * preview_scale_factor) as u32,
                         ) {
                             let [r, g, b] = pixel.0;
-                            buffer[index as usize] =
-                                b as u32 | ((g as u32) << 8) | ((r as u32) << 16);
+
+                            let r = (r.clamp(0., 1.) * 255.).floor() as u32;
+                            let g = (g.clamp(0., 1.) * 255.).floor() as u32;
+                            let b = (b.clamp(0., 1.) * 255.).floor() as u32;
+
+                            buffer[index as usize] = (r << 16) | (g << 8) | b;
                         } else {
                             buffer[index as usize] = 0;
                         }

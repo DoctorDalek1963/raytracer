@@ -16,7 +16,7 @@ use self::{
 use clap::Parser;
 use color_eyre::{eyre::Context, Result};
 use image::{DynamicImage, Rgb32FImage, RgbImage};
-use indicatif::{ParallelProgressIterator, ProgressBar, ProgressDrawTarget, ProgressStyle};
+use indicatif::{ProgressBar, ProgressDrawTarget, ProgressIterator, ProgressStyle};
 use rand::{distributions::Distribution, thread_rng};
 use rayon::iter::ParallelIterator;
 use std::{
@@ -81,7 +81,7 @@ fn main() -> Result<()> {
     let offset_distribution = rand::distributions::Uniform::new_inclusive(-0.5, 0.5);
 
     let progress_bar = ProgressBar::with_draw_target(
-        Some(args.width as u64 * args.height as u64),
+        Some(args.samples as u64),
         ProgressDrawTarget::stdout_with_hz(10),
     )
     .with_style(
@@ -119,27 +119,27 @@ fn main() -> Result<()> {
     thread::spawn({
         let float_img = unsafe { &mut *float_img } as &mut Rgb32FImage;
         move || {
-            float_img
-                .par_enumerate_pixels_mut()
-                .progress_with(progress_bar)
-                .for_each(|(i, j, pixel)| {
-                    let colour_sum: Colour = (0..args.samples)
-                        .map(|_| {
-                            let mut rng = thread_rng();
-                            camera
-                                .get_ray(
-                                    (i as f64 + offset_distribution.sample(&mut rng))
-                                        / args.width as f64,
-                                    (j as f64 + offset_distribution.sample(&mut rng))
-                                        / args.height as f64,
-                                )
-                                .colour(&scene, args.bounces)
-                        })
-                        .sum();
-                    let avg_colour = colour_sum / args.samples as f64;
+            for sample_idx in (0..args.samples).progress_with(progress_bar) {
+                float_img
+                    .par_enumerate_pixels_mut()
+                    .for_each(|(i, j, pixel)| {
+                        let mut rng = thread_rng();
+                        let sampled_colour = camera
+                            .get_ray(
+                                (i as f64 + offset_distribution.sample(&mut rng))
+                                    / args.width as f64,
+                                (j as f64 + offset_distribution.sample(&mut rng))
+                                    / args.height as f64,
+                            )
+                            .colour(&scene, args.bounces);
+                        let current_colour = Colour::from(*pixel);
 
-                    *pixel = avg_colour.into();
-                });
+                        let avg_colour = (current_colour * sample_idx as f64 + sampled_colour)
+                            / (sample_idx + 1) as f64;
+
+                        *pixel = avg_colour.into();
+                    });
+            }
 
             let time_taken = start_time.elapsed();
             println!("Rendering took {time_taken:?}");

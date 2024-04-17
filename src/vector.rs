@@ -167,9 +167,25 @@ impl From<Vec3> for image::Rgb<f32> {
     }
 }
 
+impl From<image::Rgb<f32>> for Vec3 {
+    fn from(image::Rgb([r, g, b]): image::Rgb<f32>) -> Self {
+        Self {
+            x: r as f64,
+            y: g as f64,
+            z: b as f64,
+        }
+    }
+}
+
 impl From<Vec3> for image::Rgb<f64> {
     fn from(value: Vec3) -> Self {
         image::Rgb([value.x, value.y, value.z])
+    }
+}
+
+impl From<image::Rgb<f64>> for Vec3 {
+    fn from(image::Rgb([r, g, b]): image::Rgb<f64>) -> Self {
+        Self { x: r, y: g, z: b }
     }
 }
 

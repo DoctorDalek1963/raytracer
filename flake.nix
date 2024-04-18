@@ -97,15 +97,6 @@
             inherit buildInputs;
           };
         };
-
-        apps = rec {
-          default = raytracer;
-
-          raytracer = {
-            type = "app";
-            program = "${packages.raytracer}/bin/raytracer";
-          };
-        };
       };
     };
 }

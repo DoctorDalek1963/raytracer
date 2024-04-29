@@ -40,13 +40,11 @@
         rust-toolchain = pkgs.rust-bin.stable.latest.default;
 
         buildInputs = with pkgs; [
-          # pkg-config
           libxkbcommon
           xorg.libX11
           xorg.libXcursor
           xorg.libXi
-          # xorg.libXrandr
-          # wayland
+          wayland
         ];
 
         naersk = pkgs.callPackage inputs.naersk {

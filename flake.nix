@@ -14,8 +14,8 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    naersk = {
-      url = "github:nix-community/naersk";
+    crane = {
+      url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -37,7 +37,7 @@
           overlays = [(import inputs.rust-overlay)];
         };
 
-        rust-toolchain = pkgs.rust-bin.stable.latest.default;
+        rustToolchain = pkgs.rust-bin.stable.latest.default;
 
         buildInputs = with pkgs; [
           libxkbcommon
@@ -47,15 +47,20 @@
           wayland
         ];
 
-        naersk = pkgs.callPackage inputs.naersk {
-          cargo = rust-toolchain;
-          rustc = rust-toolchain;
+        craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
+        src = craneLib.cleanCargoSource (craneLib.path ./.);
+
+        commonArgs = {
+          inherit src;
+          strictDeps = true;
         };
+
+        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
       in rec {
         devShells.default = pkgs.mkShell {
           nativeBuildInputs =
             [
-              (rust-toolchain.override {
+              (rustToolchain.override {
                 extensions = ["rust-analyzer" "rust-src" "rust-std"];
               })
             ]
@@ -81,8 +86,8 @@
           rustfmt = {
             enable = true;
             packageOverrides = {
-              cargo = rust-toolchain;
-              rustfmt = rust-toolchain;
+              cargo = rustToolchain;
+              rustfmt = rustToolchain;
             };
           };
         };
@@ -90,10 +95,13 @@
         packages = rec {
           default = raytracer;
 
-          raytracer = naersk.buildPackage {
-            src = ./.;
-            inherit buildInputs;
-          };
+          raytracer = craneLib.buildPackage (commonArgs
+            // {
+              pname = "raytracer";
+              inherit cargoArtifacts;
+              inherit (craneLib.crateNameFromCargoToml {inherit src;}) version;
+              inherit buildInputs;
+            });
         };
       };
     };

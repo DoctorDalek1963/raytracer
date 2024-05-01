@@ -93,7 +93,7 @@
         };
 
         checks = {
-          inherit (packages) raytracer;
+          inherit (packages) raytracer doc;
 
           clippy = craneLib.cargoClippy (commonArgs
             // {
@@ -115,6 +115,13 @@
               inherit cargoArtifacts;
               inherit (craneLib.crateNameFromCargoToml {inherit src;}) version;
               inherit buildInputs;
+            });
+
+          doc = craneLib.cargoDoc (commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoDocExtraArgs = "--no-deps --document-private-items";
+              RUSTDOCFLAGS = "--deny warnings";
             });
         };
       };

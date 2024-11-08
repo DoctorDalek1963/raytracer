@@ -115,6 +115,11 @@
               inherit cargoArtifacts;
               inherit (craneLib.crateNameFromCargoToml {inherit src;}) version;
               inherit buildInputs;
+
+              nativeBuildInputs = [pkgs.makeWrapper];
+              postInstall = ''
+                wrapProgram "$out/bin/raytracer" --suffix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath buildInputs}"
+              '';
             });
 
           doc = craneLib.cargoDoc (commonArgs
